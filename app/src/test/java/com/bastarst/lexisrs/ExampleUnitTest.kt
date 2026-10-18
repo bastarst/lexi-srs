@@ -1,5 +1,6 @@
 package com.bastarst.lexisrs
 
+import com.bastarst.lexisrs.data.csv.CsvParser
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,10 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val path = "src/main/assets/Oxford_3000_English_Russian.csv"
+        val list = CsvParser.parse(java.io.File(path).inputStream())
+        for (i in 1..10) {
+            println(list[i].first + ";" + list[i].second)
+        }
     }
 }
