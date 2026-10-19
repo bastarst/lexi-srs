@@ -3,15 +3,16 @@ package com.bastarst.lexisrs
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.bastarst.lexisrs.data.repository.DeckConfig
+import com.bastarst.lexisrs.ui.decks.DecksScreen
+import com.bastarst.lexisrs.ui.decks.DecksViewModel
+import com.bastarst.lexisrs.ui.decks.DecksViewModelFactory
 import com.bastarst.lexisrs.ui.theme.LexiSRSTheme
 import com.bastarst.lexisrs.ui.words.WordsScreen
 import com.bastarst.lexisrs.ui.words.WordsViewModel
@@ -24,15 +25,42 @@ class MainActivity : ComponentActivity() {
         val app = application as LexiSrsApp
 
         setContent {
-            val factory = WordsViewModelFactory(app.wordRepository)
-            val viewModel: WordsViewModel = viewModel(factory = factory)
-
             LexiSRSTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    WordsScreen(
-                        viewModel = viewModel,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navController = rememberNavController()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = "decks"
+                ) {
+                    composable("decks") {
+                        val factory = DecksViewModelFactory(app.wordRepository)
+                        val vm: DecksViewModel = viewModel(factory = factory)
+
+                        DecksScreen(
+                            viewModel = vm,
+                            onDeckClick = { deckId ->
+                                navController.navigate("words/$deckId")
+                            }
+                        )
+                    }
+
+                    composable(
+                        route = "words/{deckId}",
+                        arguments = listOf(
+                            navArgument("deckId") { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        val deckId = backStackEntry.arguments?.getLong("deckId") ?: 0L
+                        val deck = DeckConfig.byId(deckId)
+                        val factory = WordsViewModelFactory(app.wordRepository, deckId)
+                        val vm: WordsViewModel = viewModel(factory = factory)
+
+                        WordsScreen(
+                            viewModel = vm,
+                            deckName = deck.name,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
             }
         }

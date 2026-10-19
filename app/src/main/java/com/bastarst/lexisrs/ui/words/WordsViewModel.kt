@@ -14,7 +14,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
 class WordsViewModel(
-    private val repository: WordRepository
+    private val repository: WordRepository,
+    private val deckId: Long
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -23,7 +24,7 @@ class WordsViewModel(
     val words: StateFlow<List<Word>> = _query
         .debounce(300)
         .distinctUntilChanged()
-        .flatMapLatest { q -> repository.search(q) }
+        .flatMapLatest { q -> repository.searchByDeck(deckId, q) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

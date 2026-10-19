@@ -5,11 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.bastarst.lexisrs.data.repository.WordRepository
 
 class WordsViewModelFactory(
-    private val repository: WordRepository
+    private val repository: WordRepository,
+    private val deckId: Long
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return WordsViewModel(repository) as T
+        return WordsViewModel(repository, deckId) as T
     }
 }

@@ -16,7 +16,6 @@ data class Word (
     val correctCount: Int = 0,
     val wrongCount: Int = 0,
     val lastAnsweredAt: Long? = null,
-    val isFavorite: Boolean = false,
     val isDifficult: Boolean = false
 ) {
     companion object {
