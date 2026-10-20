@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class WordsViewModel(
     private val repository: WordRepository,
@@ -20,6 +21,8 @@ class WordsViewModel(
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
+    private val _editingWord = MutableStateFlow<Word?>(null)
+    val editingWord: StateFlow<Word?> = _editingWord.asStateFlow()
 
     val words: StateFlow<List<Word>> = _query
         .debounce(300)
@@ -33,5 +36,31 @@ class WordsViewModel(
 
     fun onQueryChange(newQuery: String) {
         _query.value = newQuery
+    }
+
+    fun onWordClick(word: Word) {
+        _editingWord.value = word
+    }
+
+    fun onDismissEditDialog() {
+        _editingWord.value = null
+    }
+
+    fun onSaveWord(id: Long, newEnglish: String, newRussian: String) {
+        val currentWord = _editingWord.value ?: return
+        if (newEnglish.isBlank() || newRussian.isBlank()) return
+
+        viewModelScope.launch {
+            try {
+                val updated = currentWord.copy(
+                    english = newEnglish.trim(),
+                    russian = newRussian.trim()
+                )
+                repository.updateWord(updated)
+                _editingWord.value = null
+            } catch (e: Exception) {
+                _editingWord.value = null
+            }
+        }
     }
 }

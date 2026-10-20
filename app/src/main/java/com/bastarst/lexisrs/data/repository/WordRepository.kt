@@ -52,4 +52,8 @@ class WordRepository(private val wordDao: WordDao) {
         StudyMode.REVIEW ->
             wordDao.getRandomDue(deckId, System.currentTimeMillis(), limit)
     }
+
+    suspend fun updateWord(word: Word) {
+        wordDao.update(word)
+    }
 }
