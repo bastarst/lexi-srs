@@ -29,12 +29,36 @@ class StudyViewModel(
     private fun load() {
         viewModelScope.launch {
             val words = repository.getStudyWords(deckId, mode)
-            _state.value = StudyUiState(
-                englishWords = words.shuffled(),
-                russianWords = words.shuffled(),
-                isLoading = false,
-                isComplete = words.isEmpty()
-            )
+
+            if (words.isEmpty()) {
+                _state.value = StudyUiState(
+                    isLoading = false,
+                    phase = StudyPhase.DONE
+                )
+
+                return@launch
+            }
+
+            val questions = buildQuiz(words)
+
+            if (mode == StudyMode.LEARN) {
+                _state.value = StudyUiState(
+                    englishWords = words.shuffled(),
+                    russianWords = words.shuffled(),
+                    isLoading = false,
+                    phase = StudyPhase.MATCH,
+                    quizQuestions = questions
+                )
+            } else {
+                _state.value = StudyUiState(
+                    isLoading = false,
+                    phase = StudyPhase.RECALL,
+                    quizQuestions = questions,
+                    recallIndex = 0,
+                    timeLeft = 10_000L
+                )
+                startRecallTimer()
+            }
         }
     }
 
@@ -67,7 +91,6 @@ class StudyViewModel(
                     selectedEnglishId = null,
                     selectedRussianId = null,
                     phase = StudyPhase.QUIZ,
-                    quizQuestions = buildQuiz(s.englishWords),
                     currentQuizIndex = 0
                 )
             } else {

@@ -538,7 +538,7 @@ private fun WritingBoard(
                         },
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
+                            autoCorrectEnabled = false,
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done
                         ),
