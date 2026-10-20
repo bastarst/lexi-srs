@@ -60,4 +60,22 @@ interface WordDao {
 
     @Query("SELECT COUNT(*) FROM words WHERE deckId = :deckId AND status = 0")
     fun countNewByDeck(deckId: Long): Flow<Int>
+
+    @Query("""
+        SELECT * FROM words
+        WHERE deckId = :deckId AND status = 0
+        ORDER BY RANDOM()
+        LIMIT :limit
+    """)
+    suspend fun getRandomNew(deckId: Long, limit: Int): List<Word>
+
+    @Query("""
+        SELECT * FROM words
+        WHERE deckId = :deckId 
+            AND status = 0
+            AND nextReviewAt <= :now
+        ORDER BY RANDOM()
+        LIMIT :limit
+    """)
+    suspend fun getRandomDue(deckId: Long, now: Long, limit: Int): List<Word>
 }

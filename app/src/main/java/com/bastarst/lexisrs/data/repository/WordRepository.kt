@@ -41,4 +41,15 @@ class WordRepository(private val wordDao: WordDao) {
         }
         wordDao.insertAll(words)
     }
+
+    suspend fun getStudyWords(
+        deckId: Long,
+        mode: StudyMode,
+        limit: Int = 5
+    ): List<Word> = when (mode) {
+        StudyMode.LEARN ->
+            wordDao.getRandomNew(deckId, limit)
+        StudyMode.REVIEW ->
+            wordDao.getRandomDue(deckId, System.currentTimeMillis(), limit)
+    }
 }

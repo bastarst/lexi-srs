@@ -29,12 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bastarst.lexisrs.data.repository.StudyMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DecksScreen(
     viewModel: DecksViewModel,
     onDeckClick: (Long) -> Unit,
+    onStartStudy: (Long, StudyMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val decks by viewModel.decks.collectAsStateWithLifecycle()
@@ -64,10 +66,14 @@ fun DecksScreen(
             deck = selectedDeck,
             onDismiss = { selectedDeckId = null },
             onLearnClick = {
+                val id = selectedDeckId
                 selectedDeckId = null
+                if (id != null) onStartStudy(id, StudyMode.LEARN)
             },
             onReviewClick = {
+                val id = selectedDeckId
                 selectedDeckId = null
+                if (id != null) onStartStudy(id, StudyMode.REVIEW)
             }
         )
     }
