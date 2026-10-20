@@ -164,12 +164,21 @@ class StudyViewModel(
     fun onRecallAnswer(isRemembered: Boolean) {
         timerJob?.cancel()
         val s = _state.value
+        val currentQuestion = s.quizQuestions[s.recallIndex]
+
+        val updatedQuestions = if (!isRemembered) {
+            s.quizQuestions + currentQuestion
+        } else {
+            s.quizQuestions
+        }
+
         val next = s.recallIndex + 1
 
-        if (next >= s.quizQuestions.size) {
+        if (next >= updatedQuestions.size) {
             _state.value = s.copy(phase = StudyPhase.DONE)
         } else {
             _state.value = s.copy(
+                quizQuestions = updatedQuestions,
                 recallIndex = next,
                 isTranslationVisible = false,
                 isTimerExpired = false,
