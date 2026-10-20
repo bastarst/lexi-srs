@@ -175,7 +175,12 @@ class StudyViewModel(
         val next = s.recallIndex + 1
 
         if (next >= updatedQuestions.size) {
-            _state.value = s.copy(phase = StudyPhase.DONE)
+            _state.value = s.copy(
+                phase = StudyPhase.WRITING,
+                writingIndex = 0,
+                writingInput = "",
+                isWritingError = false
+            )
         } else {
             _state.value = s.copy(
                 quizQuestions = updatedQuestions,
@@ -185,6 +190,49 @@ class StudyViewModel(
                 timeLeft = 10_000L
             )
             startRecallTimer()
+        }
+    }
+
+    fun onWritingInputChange(text: String) {
+        _state.value = _state.value.copy(
+            writingInput = text,
+            isWritingError = false
+        )
+    }
+
+    fun onCheckWriting() {
+        val s = _state.value
+        val question = s.quizQuestions.getOrNull(s.writingIndex) ?: return
+
+        val isCorrect = s.writingInput.trim()
+            .equals(question.word.english.trim(), ignoreCase = true)
+
+        if (isCorrect) {
+            moveToNextWritingWord()
+        } else {
+            _state.value = s.copy(isWritingError = true)
+        }
+    }
+
+    fun onWritingRetry() {
+        _state.value = _state.value.copy(
+            writingInput = "",
+            isWritingError = false
+        )
+    }
+
+    fun moveToNextWritingWord() {
+        val s = _state.value
+        val next = s.writingIndex + 1
+
+        if (next >= s.quizQuestions.size) {
+            _state.value = s.copy(phase = StudyPhase.DONE)
+        } else {
+            _state.value = s.copy(
+                writingIndex = next,
+                writingInput = "",
+                isWritingError = false
+            )
         }
     }
 }

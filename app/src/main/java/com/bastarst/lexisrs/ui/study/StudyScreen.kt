@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,7 +24,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,10 +36,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bastarst.lexisrs.data.local.entity.Word
@@ -77,6 +86,9 @@ fun StudyScreen(
                 }
                 state.phase == StudyPhase.RECALL -> {
                     RecallBoard(state = state, viewModel = viewModel)
+                }
+                state.phase == StudyPhase.WRITING -> {
+                    WritingBoard(state = state, viewModel = viewModel)
                 }
                 state.phase == StudyPhase.DONE -> {
                     DoneScreen(onBack = onBack)
@@ -228,6 +240,7 @@ private fun QuizBoard(
                 Text(
                     text = question.word.english,
                     textAlign = TextAlign.Center,
+                    style = LocalTextStyle.current.copy(lineHeight = 1.2.em),
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 16.sp,
                         maxFontSize = 40.sp,
@@ -276,8 +289,11 @@ private fun QuizBoard(
                     ) {
                         Text(
                             text = option.russian,
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center
+                            style = MaterialTheme.typography.titleMedium
+                                .copy(lineHeight = 1.2.em),
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -321,7 +337,6 @@ private fun RecallBoard(
 
         Spacer(Modifier.height(8.dp))
 
-        // Визуальный прогресс-бар
         LinearProgressIndicator(
             progress = { state.timeLeft / 10_000f },
             modifier = Modifier
@@ -348,6 +363,7 @@ private fun RecallBoard(
                 Text(
                     text = question.word.english,
                     textAlign = TextAlign.Center,
+                    style = LocalTextStyle.current.copy(lineHeight = 1.2.em),
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 16.sp,
                         maxFontSize = 40.sp,
@@ -375,8 +391,11 @@ private fun RecallBoard(
                 if (state.isTranslationVisible) {
                     Text(
                         text = question.word.russian,
-                        style = MaterialTheme.typography.headlineMedium,
-                        textAlign = TextAlign.Center
+                        style = MaterialTheme.typography.headlineMedium
+                            .copy(lineHeight = 1.2.em),
+                        textAlign = TextAlign.Center,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
                     )
                 } else {
                     Text(
@@ -404,14 +423,18 @@ private fun RecallBoard(
                         Button(
                             onClick = { viewModel.onRecallAnswer(false) },
                             modifier = Modifier.weight(1f).fillMaxHeight(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
                         ) {
                             Text("Не помню", style = MaterialTheme.typography.titleMedium)
                         }
                         Button(
                             onClick = { viewModel.onRecallAnswer(true) },
                             modifier = Modifier.weight(1f).fillMaxHeight(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
                             Text("Помню", style = MaterialTheme.typography.titleMedium)
                         }
@@ -432,6 +455,142 @@ private fun RecallBoard(
                     ) {
                         Text("Показать", style = MaterialTheme.typography.titleMedium)
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WritingBoard(
+    state: StudyUiState,
+    viewModel: StudyViewModel
+) {
+    val question = state.quizQuestions.getOrNull(state.writingIndex) ?: return
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "${state.writingIndex + 1} / ${state.quizQuestions.size}",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize().padding(16.dp)
+            ) {
+                Text(
+                    text = question.word.russian,
+                    textAlign = TextAlign.Center,
+                    style = LocalTextStyle.current.copy(lineHeight = 1.2.em),
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 16.sp,
+                        maxFontSize = 40.sp,
+                        stepSize = 2.sp
+                    )
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            shape = RoundedCornerShape(16.dp),
+            color = if (state.isWritingError)
+                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize().padding(16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    OutlinedTextField(
+                        value = state.writingInput,
+                        onValueChange = viewModel::onWritingInputChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography
+                            .headlineSmall.copy(textAlign = TextAlign.Center),
+                        singleLine = true,
+                        isError = state.isWritingError,
+                        placeholder = {
+                            Text("Введите слово",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.None,
+                            autoCorrect = false,
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { viewModel.onCheckWriting() }
+                        )
+                    )
+
+                    if (state.isWritingError) {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "Правильно: ${question.word.english}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            if (state.isWritingError) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.onWritingRetry() },
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    ) {
+                        Text("Еще раз", style = MaterialTheme.typography.titleMedium)
+                    }
+                    Button(
+                        onClick = { viewModel.moveToNextWritingWord() },
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    ) {
+                        Text("Правильно", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            } else {
+                Button(
+                    onClick = { viewModel.onCheckWriting() },
+                    modifier = Modifier.fillMaxSize(),
+                    enabled = state.writingInput.isNotBlank()
+                ) {
+                    Text("Проверить", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

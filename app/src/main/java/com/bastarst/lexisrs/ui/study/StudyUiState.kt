@@ -5,8 +5,9 @@ import com.bastarst.lexisrs.data.local.entity.Word
 enum class StudyPhase {
     MATCH,
     QUIZ,
-    DONE,
-    RECALL
+    RECALL,
+    WRITING,
+    DONE
 }
 
 data class QuizQuestion(
@@ -33,6 +34,10 @@ data class StudyUiState(
     val isTranslationVisible: Boolean = false,
     val isTimerExpired: Boolean = false,
     val timeLeft: Long = 10_000L,
+    // WRITING
+    val writingIndex: Int = 0,
+    val writingInput: String = "",
+    val isWritingError: Boolean = false,
 
     val isLoading: Boolean = true,
     val isComplete: Boolean = false
