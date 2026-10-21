@@ -307,7 +307,7 @@ private fun RecallBoard(
     state: StudyUiState,
     viewModel: StudyViewModel
 ) {
-    val question = state.quizQuestions.getOrNull(state.recallIndex) ?: return
+    val question = state.recallQueue.getOrNull(state.recallIndex) ?: return
 
     Column(
         modifier = Modifier
@@ -321,7 +321,7 @@ private fun RecallBoard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${state.recallIndex + 1} / ${state.quizQuestions.size}",
+                text = "${state.recallIndex + 1} / ${state.recallQueue.size}",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

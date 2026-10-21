@@ -31,6 +31,7 @@ data class StudyUiState(
     val quizCorrectId: Long? = null,
     val quizWrongId: Long? = null,
     // RECALL
+    val recallQueue: List<QuizQuestion> = emptyList(),
     val recallIndex: Int = 0,
     val isTranslationVisible: Boolean = false,
     val isTimerExpired: Boolean = false,

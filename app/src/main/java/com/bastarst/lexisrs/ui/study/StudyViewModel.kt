@@ -47,13 +47,15 @@ class StudyViewModel(
                     russianWords = words.shuffled(),
                     isLoading = false,
                     phase = StudyPhase.MATCH,
-                    quizQuestions = questions
+                    quizQuestions = questions,
+                    recallQueue = questions
                 )
             } else {
                 _state.value = StudyUiState(
                     isLoading = false,
                     phase = StudyPhase.RECALL,
                     quizQuestions = questions,
+                    recallQueue = questions,
                     recallIndex = 0,
                     timeLeft = 10_000L
                 )
@@ -137,6 +139,7 @@ class StudyViewModel(
                     _state.value = _state.value.copy(
                         quizCorrectId = null,
                         phase = StudyPhase.RECALL,
+                        recallQueue = s.quizQuestions,
                         recallIndex = 0,
                         isTranslationVisible = false,
                         isTimerExpired = false
@@ -187,7 +190,7 @@ class StudyViewModel(
     fun onRecallAnswer(isRemembered: Boolean) {
         timerJob?.cancel()
         val s = _state.value
-        val currentQuestion = s.quizQuestions[s.recallIndex]
+        val currentQuestion = s.recallQueue[s.recallIndex]
 
         val updatedFailedIds = if (!isRemembered) {
             s.failedWordIds + currentQuestion.word.id
@@ -195,15 +198,15 @@ class StudyViewModel(
             s.failedWordIds
         }
 
-        val updatedQuestions = if (!isRemembered) {
-            s.quizQuestions + currentQuestion
+        val updatedQueue = if (!isRemembered) {
+            s.recallQueue + currentQuestion
         } else {
-            s.quizQuestions
+            s.recallQueue
         }
 
         val next = s.recallIndex + 1
 
-        if (next >= updatedQuestions.size) {
+        if (next >= updatedQueue.size) {
             _state.value = s.copy(
                 phase = StudyPhase.WRITING,
                 writingIndex = 0,
@@ -213,7 +216,7 @@ class StudyViewModel(
             )
         } else {
             _state.value = s.copy(
-                quizQuestions = updatedQuestions,
+                recallQueue = updatedQueue,
                 recallIndex = next,
                 isTranslationVisible = false,
                 isTimerExpired = false,
