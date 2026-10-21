@@ -72,7 +72,7 @@ interface WordDao {
     @Query("""
         SELECT * FROM words
         WHERE deckId = :deckId 
-            AND status = 0
+            AND status != 0
             AND nextReviewAt <= :now
         ORDER BY RANDOM()
         LIMIT :limit

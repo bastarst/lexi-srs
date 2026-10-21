@@ -19,6 +19,7 @@ data class StudyUiState(
     val phase: StudyPhase = StudyPhase.MATCH,
     val englishWords: List<Word> = emptyList(),
     val russianWords: List<Word> = emptyList(),
+    val failedWordIds: Set<Long> = emptySet(),
     // MATCH
     val selectedEnglishId: Long? = null,
     val selectedRussianId: Long? = null,

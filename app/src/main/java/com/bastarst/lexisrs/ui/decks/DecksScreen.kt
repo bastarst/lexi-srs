@@ -136,7 +136,8 @@ private fun StudyDialog(
         confirmButton = {
             Button(
                 onClick = onLearnClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = deck.newCount > 0
             ) {
                 Text("Учить")
             }
@@ -144,7 +145,8 @@ private fun StudyDialog(
         dismissButton = {
             OutlinedButton(
                 onClick = onReviewClick,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = deck.dueCount > 0
             ) {
                 Text("Повторить")
             }

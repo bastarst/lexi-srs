@@ -189,6 +189,12 @@ class StudyViewModel(
         val s = _state.value
         val currentQuestion = s.quizQuestions[s.recallIndex]
 
+        val updatedFailedIds = if (!isRemembered) {
+            s.failedWordIds + currentQuestion.word.id
+        } else {
+            s.failedWordIds
+        }
+
         val updatedQuestions = if (!isRemembered) {
             s.quizQuestions + currentQuestion
         } else {
@@ -202,7 +208,8 @@ class StudyViewModel(
                 phase = StudyPhase.WRITING,
                 writingIndex = 0,
                 writingInput = "",
-                isWritingError = false
+                isWritingError = false,
+                failedWordIds = updatedFailedIds
             )
         } else {
             _state.value = s.copy(
@@ -210,7 +217,8 @@ class StudyViewModel(
                 recallIndex = next,
                 isTranslationVisible = false,
                 isTimerExpired = false,
-                timeLeft = 10_000L
+                timeLeft = 10_000L,
+                failedWordIds = updatedFailedIds
             )
             startRecallTimer()
         }
@@ -226,14 +234,16 @@ class StudyViewModel(
     fun onCheckWriting() {
         val s = _state.value
         val question = s.quizQuestions.getOrNull(s.writingIndex) ?: return
-
         val isCorrect = s.writingInput.trim()
             .equals(question.word.english.trim(), ignoreCase = true)
 
         if (isCorrect) {
             moveToNextWritingWord()
         } else {
-            _state.value = s.copy(isWritingError = true)
+            _state.value = s.copy(
+                isWritingError = true,
+                failedWordIds = s.failedWordIds + question.word.id
+            )
         }
     }
 
@@ -249,7 +259,17 @@ class StudyViewModel(
         val next = s.writingIndex + 1
 
         if (next >= s.quizQuestions.size) {
-            _state.value = s.copy(phase = StudyPhase.DONE)
+            viewModelScope.launch {
+                val uniqueWords = s.quizQuestions.map { it.word }.distinctBy { it.id }
+
+                viewModelScope.launch {
+                    uniqueWords.forEach { word ->
+                        val isSuccess = !s.failedWordIds.contains(word.id)
+                        repository.updateSrs(word, isSuccess)
+                    }
+                    _state.value = s.copy(phase = StudyPhase.DONE)
+                }
+            }
         } else {
             _state.value = s.copy(
                 writingIndex = next,

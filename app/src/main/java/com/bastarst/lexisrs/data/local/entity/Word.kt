@@ -12,11 +12,7 @@ data class Word (
     val russian: String,
     val status: Int = STATUS_NEW,
     val box: Int = 0,
-    val nextReviewAt: Long = 0,
-    val correctCount: Int = 0,
-    val wrongCount: Int = 0,
-    val lastAnsweredAt: Long? = null,
-    val isDifficult: Boolean = false
+    val nextReviewAt: Long = 0
 ) {
     companion object {
         const val STATUS_NEW = 0

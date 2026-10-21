@@ -9,6 +9,9 @@ import java.io.InputStream
 
 class WordRepository(private val wordDao: WordDao) {
 
+    private val intervals = listOf(0L, 1L, 3L, 7L, 21L)
+    private val dayMillis = 24L * 60L * 60L * 1000L
+
     fun searchByDeck(deckId: Long, query: String): Flow<List<Word>> =
         if (query.isBlank()) wordDao.getAllByDeck(deckId)
         else wordDao.searchByDeck(deckId, query)
@@ -55,5 +58,25 @@ class WordRepository(private val wordDao: WordDao) {
 
     suspend fun updateWord(word: Word) {
         wordDao.update(word)
+    }
+
+    suspend fun updateSrs(word: Word, isSuccess: Boolean) {
+        val newBox = if (isSuccess) {
+            (word.box + 1).coerceAtMost(5)
+        } else {
+            1
+        }
+
+        val days = intervals[newBox]
+        val nextReview = System.currentTimeMillis() + days * dayMillis
+        val newStatus = if (newBox == 5) Word.STATUS_LEARNED else Word.STATUS_REVIEW
+
+        val updated = word.copy(
+            box = newBox,
+            nextReviewAt = nextReview,
+            status = newStatus
+        )
+
+        wordDao.update(updated)
     }
 }
