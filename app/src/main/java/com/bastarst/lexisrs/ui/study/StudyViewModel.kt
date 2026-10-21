@@ -244,16 +244,19 @@ class StudyViewModel(
             moveToNextWritingWord()
         } else {
             _state.value = s.copy(
-                isWritingError = true,
-                failedWordIds = s.failedWordIds + question.word.id
+                isWritingError = true
             )
         }
     }
 
     fun onWritingRetry() {
+        val s = _state.value
+        val question = s.quizQuestions.getOrNull(s.writingIndex) ?: return
+
         _state.value = _state.value.copy(
             writingInput = "",
-            isWritingError = false
+            isWritingError = false,
+            failedWordIds = s.failedWordIds + question.word.id
         )
     }
 
