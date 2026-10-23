@@ -79,4 +79,12 @@ class WordRepository(private val wordDao: WordDao) {
 
         wordDao.update(updated)
     }
+
+    suspend fun hasMoreWords(deckId: Long, mode: StudyMode): Boolean {
+        return if (mode == StudyMode.LEARN) {
+            wordDao.countNewByDeckOnce(deckId) > 0
+        } else {
+            wordDao.countDueByDeckOnce(deckId, System.currentTimeMillis()) > 0
+        }
+    }
 }

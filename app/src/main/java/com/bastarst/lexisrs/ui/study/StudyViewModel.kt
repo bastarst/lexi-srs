@@ -273,7 +273,13 @@ class StudyViewModel(
                         val isSuccess = !s.failedWordIds.contains(word.id)
                         repository.updateSrs(word, isSuccess)
                     }
-                    _state.value = s.copy(phase = StudyPhase.DONE)
+
+                    val hasMore = repository.hasMoreWords(deckId, mode)
+
+                    _state.value = s.copy(
+                        phase = StudyPhase.DONE,
+                        hasMoreWords = hasMore
+                    )
                 }
             }
         } else {
@@ -283,5 +289,10 @@ class StudyViewModel(
                 isWritingError = false
             )
         }
+    }
+
+    fun onContinue() {
+        _state.value = StudyUiState()
+        load()
     }
 }

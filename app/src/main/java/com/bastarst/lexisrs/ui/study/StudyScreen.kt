@@ -91,7 +91,11 @@ fun StudyScreen(
                     WritingBoard(state = state, viewModel = viewModel)
                 }
                 state.phase == StudyPhase.DONE -> {
-                    DoneScreen(onBack = onBack)
+                    DoneScreen(
+                        hasMoreWords = state.hasMoreWords,
+                        onContinue = { viewModel.onContinue() },
+                        onBack = onBack
+                    )
                 }
             }
         }
@@ -597,15 +601,32 @@ private fun WritingBoard(
 }
 
 @Composable
-private fun DoneScreen(onBack: () -> Unit) {
+private fun DoneScreen(
+    hasMoreWords: Boolean,
+    onContinue: () -> Unit,
+    onBack: () -> Unit
+) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Готово!", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
+
         Button(
+            onClick = onContinue,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = hasMoreWords
+        ) {
+            Text("Продолжить")
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        OutlinedButton(
             onClick = onBack,
             modifier = Modifier.fillMaxWidth()
         ) {

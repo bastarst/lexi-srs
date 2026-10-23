@@ -78,4 +78,15 @@ interface WordDao {
         LIMIT :limit
     """)
     suspend fun getRandomDue(deckId: Long, now: Long, limit: Int): List<Word>
+
+    @Query("""
+        SELECT COUNT(*) FROM words
+        WHERE deckId = :deckId
+        AND status != 0
+        AND nextReviewAt <= :now
+    """)
+    suspend fun countDueByDeckOnce(deckId: Long, now: Long): Int
+
+    @Query("SELECT COUNT(*) FROM words WHERE deckId = :deckId AND status = 0")
+    suspend fun countNewByDeckOnce(deckId: Long): Int
 }

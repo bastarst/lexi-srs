@@ -42,5 +42,6 @@ data class StudyUiState(
     val isWritingError: Boolean = false,
 
     val isLoading: Boolean = true,
-    val isComplete: Boolean = false
+    val isComplete: Boolean = false,
+    val hasMoreWords: Boolean = false
 )
